@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>第一个用户</title>
+</head>
+<body>
+	<script type="text/javascript">
+		var socket;
+		if (!window.WebSocket) {
+			window.WebSocket = window.MozWebSocket;
+		}
+		if (window.WebSocket) {
+			socket = new WebSocket("ws://localhost:500/ws");
+			socket.onmessage = function(event) {
+				var ta = document.getElementById('responseText');
+				var json = eval("("+event.data+")");
+					var type = json.type;
+					 if(type == "REPEAT_LOGIN"){
+					 	alert(json.ERR);
+					 }
+					 if(type == "OFFLINE_FIREND"){
+					 	ta.value = ta.value + '\n' +json.SENDERID+"下线"
+					 }
+					 if(type == "ONLINE_FIREND"){
+					 	ta.value = ta.value + '\n' +json.SENDERID+"上线"
+					 }
+					 if(type == "MessageToOne"){
+						ta.value = ta.value + '\n' + event.data
+					 }
+	               
+			};
+			socket.onopen = function(event) {
+				var ta = document.getElementById('responseText');
+				ta.value = "连接开启!";
+				socket.send('{"senderId":"105474","type":"LOGIN"}');
+			};
+			socket.onclose = function(event) {
+				var ta = document.getElementById('responseText');
+				ta.value = ta.value + "连接被关闭";
+			};
+		} else {
+			alert("你的浏览器不支持 WebSocket！");
+		}
+
+		function send(message) {
+			if (!window.WebSocket) {
+				return;
+			}
+			if (socket.readyState == WebSocket.OPEN) {
+				socket.send(message);
+			} else {
+				alert("连接没有开启.");
+			}
+		}
+		
+          function sendMessage(){
+          	socket.send('{"senderId":"105474","recvId":"105638","type":"MessageToOne"}')
+          }
+	</script>
+		<h3>WebSocket 聊天室：</h3>
+		<textarea id="responseText" style="width: 500px; height: 300px;"></textarea>
+		<br> 
+		<input type="text" name="message" style="width: 300px"value="Welcome to www.waylau.com"> 
+		<input type="button"value="发送消息" onclick="sendMessage()">
+		 <input type="button"onclick="javascript:document.getElementById('responseText').value=''" value="清空聊天记录">
+	<br>
+	<br>
+</body>
+</html>
