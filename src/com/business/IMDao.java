@@ -7,4 +7,8 @@ import org.springframework.stereotype.Repository;
 public class IMDao {
 @Autowired
 private JdbcTemplate jdbcTemplate;
+
+public void test(){
+	this.jdbcTemplate.queryForList("select * from system_user");
+}
 }

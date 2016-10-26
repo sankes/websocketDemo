@@ -14,13 +14,16 @@ import java.util.Map;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.base.util.EasyApplicationContextUtils;
 import com.business.IMDao;
 import com.entity.MessageEntity;
 import com.heartbeat.HeartBeat;
 import com.logger.LogInfo;
 
 public class IMControlCenter {
+	
 	// 日志处理
 	Logger logs = Logger.getLogger(IMControlCenter.class);
 	LogInfo log = new LogInfo();
@@ -34,19 +37,20 @@ public class IMControlCenter {
 	// 发送消息对象
 	SendMessage sendMessage = new SendMessage();
 	//后台对象
-	private IMDao imDao;
+	private IMDao iMDao = EasyApplicationContextUtils.getBeanByType(IMDao.class);
 	//心跳检测启动标识当flag_heart为0时，启动心跳检测
 	private int flag_heart = 0;
 	//存放心跳检测在线人员数组
 	public static ArrayList<String> onlinList=new ArrayList<String>();
 	// 消息分类处理
 	public void doMsgForShunt(ChannelHandlerContext ctx, TextWebSocketFrame msg){
+		iMDao.test();
 		log.info("终端上传参数"+msg.text());
-		if(flag_heart == 0){
-			 HeartBeat.heartBeat();
-			 log.info("开启心跳检测");
-			 flag_heart++;
-		}
+//		if(flag_heart == 0){
+//			 HeartBeat.heartBeat();
+//			 log.info("开启心跳检测");
+//			 flag_heart++;
+//		}
 		JSONObject json = JSONObject.fromObject(msg.text());
 		MessageEntity obj=(MessageEntity) JSONObject.toBean(json,MessageEntity.class);
 		String senderId = json.getString("senderId");
