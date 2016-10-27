@@ -5,13 +5,61 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 %>
 
 <!DOCTYPE html>
-<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>ÉçÍÅÖ÷½çÃæ</title>
-<link rel="stylesheet" href="imh5/css/bootstrap.min.css" />
+<meta charset="UTF-8">
+<title>main</title>
+<link rel="stylesheet" href="css/demo.css">
+<link rel="stylesheet" href="css/jquery.flipster.css">
+<link rel="stylesheet" href="css/flipsternavtabs.css">
 </head>
 <body>
-	<nav></nav>
+
+<!-- ´úÂë²¿·Öbegin -->
+<div class="flipster">
+	<ul>
+		<li>
+			<a href="#" class="Button Block" style="background-image:url(image/login.jpg); background-repeat:no-repeat;background-attachment: fixed;background-size:100% 100%;">
+				<h1>All Features</h1>
+				<p>ÕâÊÇÒ»¶ÎÃèÊö</p>
+			</a>
+		</li>
+		<li>
+			<a href="#" class="Button Block">
+				<h1>Basic Setup</h1>
+				<p>The bare minimum code needed to implement Flipster</p>
+			</a>
+		</li>
+		<li>
+			<a href="#" class="Button Block">
+				<h1>Carousel</h1>
+				<p>Roundabout carousel style!</p>
+			</a>
+		</li>
+		<li>
+			<a href="#" class="Button Block">
+				<h1>Coverflow with Tab Navigation</h1>
+				<p>Example of tab navigation using the <code>enableNav</code> option</p>
+			</a>
+		</li>
+		<li>
+			<a href="#" class="Button Block">
+				<h1>Carousel with Tab Navigation</h1>
+				<p>Example of tab navigation using the <code>enableNav</code> option</p>
+			</a>
+		</li>
+  	</ul>
+</div>
+<img src="image/shumiao.png" style="">
+<script src="js/jquery-1.8.3.min.js"></script>
+<script src="js/jquery.flipster.js"></script>
+<script>
+$(function(){ 
+	$(".flipster").flipster({ 
+		style: 'carousel', 
+		start: 0 }); 
+	});
+</script>
+<!-- ´úÂë²¿·Öend -->
+
 </body>
 </html>
