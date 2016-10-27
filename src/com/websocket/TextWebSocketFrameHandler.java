@@ -126,7 +126,7 @@ public class TextWebSocketFrameHandler extends SimpleChannelInboundHandler<TextW
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		Channel incoming = ctx.channel();
-		System.out.println("Client:" + incoming.remoteAddress() + "异常");
+		// System.out.println("Client:" + incoming.remoteAddress() + "异常");
 		// 当出现异常就关闭连接
 		cause.printStackTrace();
 		ctx.close();

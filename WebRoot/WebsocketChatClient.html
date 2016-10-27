@@ -25,7 +25,7 @@
 					 if(type == "ONLINE_FIREND"){
 					 	ta.value = ta.value + '\n' +json.SENDERID+"上线"
 					 }
-					 if(type == "MessageToOne"){
+					 if(type == "MESSAGE_TO_ONE"){
 						ta.value = ta.value + '\n' + event.data
 					 }
 			};
@@ -54,7 +54,7 @@
 		}
 		 
           function sendMessage(){
-          	socket.send('{"senderId":"105638","recvId":"105474","type":"MessageToOne"}')
+          	socket.send('{"senderId":"105638","recvId":"105474","type":"MESSAGE_TO_ONE"}')
           }
 	</script>
 		<h3>WebSocket 聊天室：</h3>

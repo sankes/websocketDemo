@@ -44,7 +44,6 @@ public class IMControlCenter {
 	public static ArrayList<String> onlinList=new ArrayList<String>();
 	// 消息分类处理
 	public void doMsgForShunt(ChannelHandlerContext ctx, TextWebSocketFrame msg){
-		iMDao.test();
 		log.info("终端上传参数"+msg.text());
 //		if(flag_heart == 0){
 //			 HeartBeat.heartBeat();
@@ -54,16 +53,30 @@ public class IMControlCenter {
 		JSONObject json = JSONObject.fromObject(msg.text());
 		MessageEntity obj=(MessageEntity) JSONObject.toBean(json,MessageEntity.class);
 		String senderId = json.getString("senderId");
-		if(obj.getType().equalsIgnoreCase("LOGIN")) {
+		switch(obj.getType()){
+		case LOGIN:
 			channelOperation.channelAdd(ctx, senderId);
-		}else if(obj.getType().equalsIgnoreCase("MessageToOne")){
+			break;
+		case MESSAGE_TO_ONE:
 			String recvId = json.getString("recvId");
 			sendMessage.sendMessage(json, recvId);
-		}else if(obj.getType().equalsIgnoreCase("LOGINOUT")){
+			break;
+		case LOGINOUT:
 			channelOperation.channelRemove(ctx);
-		}else if(obj.getType().equalsIgnoreCase("HEAER_BEAT")){
-			onlinList.add(obj.getSenderId());
+			break;
+		default:
+			break;
 		}
+//		if(obj.getType().equalsIgnoreCase("LOGIN")) {
+//			channelOperation.channelAdd(ctx, senderId);
+//		}else if(obj.getType().equalsIgnoreCase("MessageToOne")){
+//			String recvId = json.getString("recvId");
+//			sendMessage.sendMessage(json, recvId);
+//		}else if(obj.getType().equalsIgnoreCase("LOGINOUT")){
+//			channelOperation.channelRemove(ctx);
+//		}else if(obj.getType().equalsIgnoreCase("HEAER_BEAT")){
+//			onlinList.add(obj.getSenderId());
+//		}
 		
 	}
 }

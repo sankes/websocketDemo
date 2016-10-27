@@ -12,5 +12,7 @@
 	 <import resource="classpath:/context/injection*.xml"/>
     <!-- 开启websocket服务 -->
 	 <import resource="classpath:/context/sman*.xml"/>
+	 <!-- post请求
+	 <import resource="classpath:/context/post-view.xml"/> -->
 	  
 	  </beans>

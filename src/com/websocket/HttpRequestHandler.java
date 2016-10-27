@@ -1,4 +1,5 @@
 package com.websocket;
+
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.URISyntaxException;
@@ -23,36 +24,36 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedNioFile;
 
 /**
- * HttpRequestHandler 鍋氫簡涓嬮潰鍑犱欢浜嬶紝
+ * HttpRequestHandler 做了下面几件事，
  * </p>
- * 濡傛灉璇�HTTP 璇锋眰琚彂閫佸埌URI 鈥�ws鈥濓紝璋冪敤 FullHttpRequest 涓婄殑 retain()锛屽苟閫氳繃璋冪敤
- * fireChannelRead(msg) 杞彂鍒颁笅涓�釜 ChannelInboundHandler銆俽etain() 鏄繀瑕佺殑锛屽洜涓�
- * channelRead() 瀹屾垚鍚庯紝瀹冧細璋冪敤 FullHttpRequest 涓婄殑 release() 鏉ラ噴鏀惧叾璧勬簮銆�锛堣鍙傝�鎴戜滑鍏堝墠鐨�
- * SimpleChannelInboundHandler 鍦ㄧ6绔犱腑璁ㄨ锛�
+ * 如果该 HTTP 请求被发送到URI “/ws”，调用 FullHttpRequest 上的 retain()，并通过调用
+ * fireChannelRead(msg) 转发到下一个 ChannelInboundHandler。retain() 是必要的，因为
+ * channelRead() 完成后，它会调用 FullHttpRequest 上的 release() 来释放其资源。 （请参考我们先前的
+ * SimpleChannelInboundHandler 在第6章中讨论）
  * </p>
- * 濡傛灉瀹㈡埛绔彂閫佺殑 HTTP 1.1 澶存槸鈥淓xpect: 100-continue鈥�锛屽皢鍙戦�鈥�00 Continue鈥濈殑鍝嶅簲銆�
+ * 如果客户端发送的 HTTP 1.1 头是“Expect: 100-continue” ，将发送“100 Continue”的响应。
  * </p>
- * 鍦�澶磋璁剧疆鍚庯紝鍐欎竴涓�HttpResponse 杩斿洖缁欏鎴风銆傛敞鎰忥紝杩欐槸涓嶆槸 FullHttpResponse锛屽敮涓�殑鍙嶅簲鐨勭涓�儴鍒嗐�姝ゅ锛屾垜浠笉浣跨敤
- * writeAndFlush() 鍦ㄨ繖閲�- 杩欎釜鏄湪鏈�悗瀹屾垚銆�
+ * 在 头被设置后，写一个 HttpResponse 返回给客户端。注意，这是不是 FullHttpResponse，唯一的反应的第一部分。此外，我们不使用
+ * writeAndFlush() 在这里 - 这个是在最后完成。
  * </p>
- * 濡傛灉娌℃湁鍔犲瘑涔熶笉鍘嬬缉锛岃杈惧埌鏈�ぇ鐨勬晥鐜囧彲浠ユ槸閫氳繃瀛樺偍 index.html 鐨勫唴瀹瑰湪涓�釜 DefaultFileRegion
- * 瀹炵幇銆傝繖灏嗗埄鐢ㄩ浂鎷疯礉鏉ユ墽琛屼紶杈撱�鍑轰簬杩欎釜鍘熷洜锛屾垜浠鏌ワ紝鐪嬬湅鏄惁鏈変竴涓�SslHandler 鍦�ChannelPipeline 涓�鍙﹀锛屾垜浠娇鐢�
- * ChunkedNioFile銆�
+ * 如果没有加密也不压缩，要达到最大的效率可以是通过存储 index.html 的内容在一个 DefaultFileRegion
+ * 实现。这将利用零拷贝来执行传输。出于这个原因，我们检查，看看是否有一个 SslHandler 在 ChannelPipeline 中。另外，我们使用
+ * ChunkedNioFile。
  * </p>
- * 鍐�LastHttpContent 鏉ユ爣璁板搷搴旂殑缁撴潫锛屽苟缁堟瀹�
+ * 写 LastHttpContent 来标记响应的结束，并终止它
  * </p>
- * 濡傛灉涓嶈姹�keepalive 锛屾坊鍔�ChannelFutureListener 鍒�ChannelFuture
- * 瀵硅薄鐨勬渶鍚庡啓鍏ワ紝骞跺叧闂繛鎺ャ�娉ㄦ剰锛岃繖閲屾垜浠皟鐢�writeAndFlush() 鏉ュ埛鏂版墍鏈変互鍓嶅啓鐨勪俊鎭�
+ * 如果不要求 keepalive ，添加 ChannelFutureListener 到 ChannelFuture
+ * 对象的最后写入，并关闭连接。注意，这里我们调用 writeAndFlush() 来刷新所有以前写的信息。
  * 
- * 鎵╁睍 SimpleChannelInboundHandler 鐢ㄤ簬澶勭悊 FullHttpRequest淇℃伅
+ * 扩展 SimpleChannelInboundHandler 用于处理 FullHttpRequest信息
  * 
  * @author shankes
- * @created 2016骞�鏈�鏃�涓嬪崍5:47:36
+ * @created 2016年8月7日 下午5:47:36
  */
-public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {// 1.鎵╁睍
+public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {// 1.扩展
 																						// SimpleChannelInboundHandler
-																						// 鐢ㄤ簬澶勭悊
-																						// FullHttpRequest淇℃伅
+																						// 用于处理
+																						// FullHttpRequest信息
 	private final String wsUri;
 	private static final File INDEX;
 
@@ -74,39 +75,39 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
 		if (wsUri.equalsIgnoreCase(request.getUri())) {
-			// 2.濡傛灉璇锋眰鏄�WebSocket 鍗囩骇锛岄�澧炲紩鐢ㄨ鏁板櫒锛堜繚鐣欙級
-			// 骞朵笖灏嗗畠浼犻�缁欏湪 ChannelPipeline 涓殑涓嬩釜 ChannelInboundHandler
+			// 2.如果请求是 WebSocket 升级，递增引用计数器（保留）
+			// 并且将它传递给在 ChannelPipeline 中的下个 ChannelInboundHandler
 			ctx.fireChannelRead(request.retain());
 		} else {
 			if (HttpHeaders.is100ContinueExpected(request)) {
-				// 3.澶勭悊绗﹀悎 HTTP 1.1鐨�"100 Continue" 璇锋眰
+				// 3.处理符合 HTTP 1.1的 "100 Continue" 请求
 				send100Continue(ctx);
 			}
-			// 4.璇诲彇榛樿鐨�WebsocketChatClient.html 椤甸潰
+			// 4.读取默认的 WebsocketChatClient.html 页面
 			RandomAccessFile file = new RandomAccessFile(INDEX, "r");
 
 			HttpResponse response = new DefaultHttpResponse(request.getProtocolVersion(), HttpResponseStatus.OK);
 			response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
 
 			boolean keepAlive = HttpHeaders.isKeepAlive(request);
-			// 5.鍒ゆ柇 keepalive 鏄惁鍦ㄨ姹傚ご閲岄潰
+			// 5.判断 keepalive 是否在请求头里面
 			if (keepAlive) {
 				response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length());
 				response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
 			}
-			// 6.鍐�HttpResponse 鍒板鎴风
+			// 6.写 HttpResponse 到客户端
 			ctx.write(response);
-			// 7.鍐�index.html 鍒板鎴风锛屽垽鏂�SslHandler 鏄惁鍦�ChannelPipeline 鏉ュ喅瀹氭槸浣跨敤
-			// DefaultFileRegion 杩樻槸 ChunkedNioFile
+			// 7.写 index.html 到客户端，判断 SslHandler 是否在 ChannelPipeline 来决定是使用
+			// DefaultFileRegion 还是 ChunkedNioFile
 			if (ctx.pipeline().get(SslHandler.class) == null) {
 				ctx.write(new DefaultFileRegion(file.getChannel(), 0, file.length()));
 			} else {
 				ctx.write(new ChunkedNioFile(file.getChannel()));
 			}
-			// 8.鍐欏苟鍒锋柊 LastHttpContent 鍒板鎴风锛屾爣璁板搷搴斿畬鎴�
+			// 8.写并刷新 LastHttpContent 到客户端，标记响应完成
 			ChannelFuture future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
 			if (!keepAlive) {
-				// 9.濡傛灉 keepalive 娌℃湁瑕佹眰锛屽綋鍐欏畬鎴愭椂锛屽叧闂�Channel
+				// 9.如果 keepalive 没有要求，当写完成时，关闭 Channel
 				future.addListener(ChannelFutureListener.CLOSE);
 			}
 
@@ -122,8 +123,8 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		Channel incoming = ctx.channel();
-		System.out.println("Client:" + incoming.remoteAddress() + "寮傚父");
-		// 褰撳嚭鐜板紓甯稿氨鍏抽棴杩炴帴
+		System.out.println("Client:" + incoming.remoteAddress() + "异常");
+		// 当出现异常就关闭连接
 		cause.printStackTrace();
 		ctx.close();
 	}
