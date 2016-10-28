@@ -16,8 +16,15 @@
 				var ta = document.getElementById('responseText');
 				 var json = eval("("+event.data+")");
 					var type = json.type;
-					 if(type == "REPEAT_LOGIN"){
+					if(type == "LOGIN_DROP"){
 					 	alert(json.ERR);
+					 }
+					 if(type == "REPEAT_LOGIN"){
+					 if(confirm("当前用户已经在线，是否继续登录")){
+					 	socket.send('{"senderId":"105638","type":"REPEAT_LOGIN_HANDLE"}');
+					 }else{
+					 	socket.send('{"senderId":"105638","type":"TEMP_DROP"}');
+					 }
 					 }
 					 if(type == "OFFLINE_FIREND"){
 					 	ta.value = ta.value + '\n' +json.SENDERID+"下线"

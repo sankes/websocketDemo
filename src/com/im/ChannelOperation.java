@@ -27,7 +27,7 @@ public class ChannelOperation implements ChannelTools{
 		public void channelAdd(ChannelHandlerContext ctx,String senderId){
 			ChannelId id = channelIdMap.get(senderId);
 			if (id != null) {
-				repeatLogin(ctx);
+				repeatLogin(ctx,senderId);
 				return;
 			}
 			logIn(ctx);
@@ -44,7 +44,7 @@ public class ChannelOperation implements ChannelTools{
 				  while(iterator.hasNext()) {
 					  String key = iterator.next().toString();
 					  if(channelIdMap.get(key).equals(ctx.channel().id())){
-						  channelIdMap.remove(key);
+						  iterator.remove();
 						  ctx.channel().close();
 						  log.info("用户"+key+"下线，连接通道以关闭");
 						//用户下线，通知所有用户
@@ -53,6 +53,21 @@ public class ChannelOperation implements ChannelTools{
 				  }
 				  
 			  }
+			  //移除临时通道
+			  if(channelIdMapTemp.size()!=0){
+				  Set keysTemp = channelIdMapTemp.keySet();
+				  if(keys != null) {
+					  Iterator iterator = keys.iterator();
+					  while(iterator.hasNext()) {
+						  String key = iterator.next().toString();
+						  if(channelIdMapTemp.get(key).equals(ctx.channel().id())){
+							  iterator.remove();
+							  ctx.channel().close();
+						  }
+					  }
+					  
+				  }
+			 }
 		}
 		//组装用户上线信息，通知其他用户
 		public void logIn(ChannelHandlerContext ctx){
@@ -87,12 +102,52 @@ public class ChannelOperation implements ChannelTools{
 			  }
 		}
 		//用户重复登陆问题
-		public void repeatLogin(ChannelHandlerContext ctx){
+		public void repeatLogin(ChannelHandlerContext ctx,String senderId){
 			JSONObject json=new JSONObject();
 			json.put("type", "REPEAT_LOGIN");
-			json.put("ERR","重复登陆，您已下线");
-			log.info("用户重复登陆，以强迫下线");
+			json.put("ERR","当前用户已在线");
 			ctx.channel().writeAndFlush(new TextWebSocketFrame(json.toString()));
-			ctx.channel().close();
+			channels.add(ctx.channel());
+			channelIdMapTemp.put(senderId,ctx.channel().id());
+		}
+	//处理用户重复登录,强迫在线用户下线
+		public void repeatLoginHandle(ChannelHandlerContext ctx,String senderId){
+		Channel chanel = channels.find(channelIdMap.get(senderId));
+			JSONObject json=new JSONObject();
+			json.put("type", "LOGIN_DROP");
+			json.put("ERR","你已经被顶下线了");
+			chanel.writeAndFlush(new TextWebSocketFrame(json.toString()));
+			chanel.close();
+		Set keys = channelIdMap.keySet();
+		  if(keys != null) {
+			  Iterator iterator = keys.iterator();
+			  while(iterator.hasNext()) {
+				  String key = iterator.next().toString();
+				  if(key.equals(senderId)){
+					  iterator.remove();
+					  channelIdMap.remove(senderId);
+				  }
+			  }
+		  }
+		  logIn(ctx);
+			channelIdMap.put(senderId,ctx.channel().id());
+			channels.add(ctx.channel());
+			log.info("用户"+senderId+"上线");
+		}
+		//移除临时通道
+		public void tempChanelRemove(ChannelHandlerContext ctx,String senderId){
+			Channel chanel = channels.find(channelIdMapTemp.get(senderId));
+			chanel.close();
+			Set keys = channelIdMapTemp.keySet();
+			  if(keys != null) {
+				  Iterator iterator = keys.iterator();
+				  while(iterator.hasNext()) {
+					  String key = iterator.next().toString();
+					  if(key.equals(senderId)){
+						  iterator.remove();
+						  channelIdMapTemp.remove(senderId);
+					  }
+				  }
+			  }
 		}
 }

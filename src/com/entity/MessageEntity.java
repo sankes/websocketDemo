@@ -12,7 +12,7 @@ package com.entity;
 public class MessageEntity {
 	private String senderId;
 	private String recvId;
-	private MsgType type;
+	private String type;
 	public String getSenderId() {
 		return senderId;
 	}
@@ -25,10 +25,10 @@ public class MessageEntity {
 	public void setRecvId(String recvId) {
 		this.recvId = recvId;
 	}
-	public MsgType getType() {
+	public String getType() {
 		return type;
 	}
-	public void setType(MsgType type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 }

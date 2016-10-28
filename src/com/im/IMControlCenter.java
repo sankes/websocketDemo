@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.base.util.EasyApplicationContextUtils;
 import com.business.IMDao;
 import com.entity.MessageEntity;
+import com.entity.MsgType;
 import com.heartbeat.HeartBeat;
 import com.logger.LogInfo;
 
@@ -32,6 +33,8 @@ public class IMControlCenter {
 			GlobalEventExecutor.INSTANCE);
 	// 所有在线用户
 	public static Map<String, ChannelId> channelIdMap = new HashMap<String, ChannelId>();
+	//临时通道
+	public static Map<String, ChannelId> channelIdMapTemp = new HashMap<String, ChannelId>();
 	// 通道操作对象
 	ChannelOperation channelOperation = new ChannelOperation();
 	// 发送消息对象
@@ -53,7 +56,7 @@ public class IMControlCenter {
 		JSONObject json = JSONObject.fromObject(msg.text());
 		MessageEntity obj=(MessageEntity) JSONObject.toBean(json,MessageEntity.class);
 		String senderId = json.getString("senderId");
-		switch(obj.getType()){
+		switch(MsgType.valueOfString(obj.getType())){
 		case LOGIN:
 			channelOperation.channelAdd(ctx, senderId);
 			break;
@@ -61,8 +64,14 @@ public class IMControlCenter {
 			String recvId = json.getString("recvId");
 			sendMessage.sendMessage(json, recvId);
 			break;
-		case LOGINOUT:
+		case LOGOUT:
 			channelOperation.channelRemove(ctx);
+			break;
+		case REPEAT_LOGIN_HANDLE:
+			channelOperation.repeatLoginHandle(ctx, senderId);
+			break;
+		case TEMP_DROP:
+			channelOperation.tempChanelRemove(ctx, senderId);
 			break;
 		default:
 			break;

@@ -19,6 +19,8 @@ public interface ChannelTools {
 		public static ChannelGroup channels = IMControlCenter.channels;
 		//所有在线用户
 		public static Map<String,ChannelId> channelIdMap= IMControlCenter.channelIdMap;
+		//所有临时通道
+		public static Map<String,ChannelId> channelIdMapTemp= IMControlCenter.channelIdMapTemp;
 		// 日志处理
 		Logger logs = Logger.getLogger(IMControlCenter.class);
 		LogInfo log = new LogInfo();
